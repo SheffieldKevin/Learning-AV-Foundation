@@ -183,66 +183,66 @@
 
 - (AVMutableVideoComposition *)buildVideoCompositionAndInstructions {
 
-NSMutableArray *compositionInstructions = [NSMutableArray array];
+    NSMutableArray *compositionInstructions = [NSMutableArray array];
 
-// Look up all of the video tracks in the composition
-NSArray *tracks = [self.composition tracksWithMediaType:AVMediaTypeVideo];
+    // Look up all of the video tracks in the composition
+    NSArray *tracks = [self.composition tracksWithMediaType:AVMediaTypeVideo];
 
-for (NSUInteger i = 0; i < self.passThroughTimeRanges.count; i++) {         // 1
+    for (NSUInteger i = 0; i < self.passThroughTimeRanges.count; i++) {         // 1
 
-    // Calculate the trackIndex to operate upon: 0, 1, 0, 1, etc.
-    NSUInteger trackIndex = i % 2;
+        // Calculate the trackIndex to operate upon: 0, 1, 0, 1, etc.
+        NSUInteger trackIndex = i % 2;
 
-    AVMutableCompositionTrack *currentTrack = tracks[trackIndex];
+        AVMutableCompositionTrack *currentTrack = tracks[trackIndex];
 
-    AVMutableVideoCompositionInstruction *instruction =                     // 2
-        [AVMutableVideoCompositionInstruction videoCompositionInstruction];
-
-    instruction.timeRange =                                                 // 3
-        [self.passThroughTimeRanges[i] CMTimeRangeValue];
-
-    AVMutableVideoCompositionLayerInstruction *layerInstruction =           // 4
-        [AVMutableVideoCompositionLayerInstruction
-            videoCompositionLayerInstructionWithAssetTrack:currentTrack];
-
-    instruction.layerInstructions = @[layerInstruction];
-
-    [compositionInstructions addObject:instruction];
-
-    if (i < self.transitionTimeRanges.count) {
-
-        AVCompositionTrack *foregroundTrack = tracks[trackIndex];           // 5
-        AVCompositionTrack *backgroundTrack = tracks[1 - trackIndex];
-
-        AVMutableVideoCompositionInstruction *instruction =                 // 6
+        AVMutableVideoCompositionInstruction *instruction =                     // 2
             [AVMutableVideoCompositionInstruction videoCompositionInstruction];
 
-        CMTimeRange timeRange = [self.transitionTimeRanges[i] CMTimeRangeValue];
-        instruction.timeRange = timeRange;
+        instruction.timeRange =                                                 // 3
+            [self.passThroughTimeRanges[i] CMTimeRangeValue];
 
-        AVMutableVideoCompositionLayerInstruction *fromLayerInstruction =   // 7
+        AVMutableVideoCompositionLayerInstruction *layerInstruction =           // 4
             [AVMutableVideoCompositionLayerInstruction
-                videoCompositionLayerInstructionWithAssetTrack:foregroundTrack];
+                videoCompositionLayerInstructionWithAssetTrack:currentTrack];
 
-        AVMutableVideoCompositionLayerInstruction *toLayerInstruction =
-            [AVMutableVideoCompositionLayerInstruction
-                videoCompositionLayerInstructionWithAssetTrack:backgroundTrack];
-
-        instruction.layerInstructions = @[fromLayerInstruction,             // 8
-                                          toLayerInstruction];
+        instruction.layerInstructions = @[layerInstruction];
 
         [compositionInstructions addObject:instruction];
+
+        if (i < self.transitionTimeRanges.count) {
+
+            AVCompositionTrack *foregroundTrack = tracks[trackIndex];           // 5
+            AVCompositionTrack *backgroundTrack = tracks[1 - trackIndex];
+
+            AVMutableVideoCompositionInstruction *instruction =                 // 6
+                [AVMutableVideoCompositionInstruction videoCompositionInstruction];
+
+            CMTimeRange timeRange = [self.transitionTimeRanges[i] CMTimeRangeValue];
+            instruction.timeRange = timeRange;
+
+            AVMutableVideoCompositionLayerInstruction *fromLayerInstruction =   // 7
+                [AVMutableVideoCompositionLayerInstruction
+                    videoCompositionLayerInstructionWithAssetTrack:foregroundTrack];
+
+            AVMutableVideoCompositionLayerInstruction *toLayerInstruction =
+                [AVMutableVideoCompositionLayerInstruction
+                    videoCompositionLayerInstructionWithAssetTrack:backgroundTrack];
+
+            instruction.layerInstructions = @[fromLayerInstruction,             // 8
+                                              toLayerInstruction];
+
+            [compositionInstructions addObject:instruction];
+        }
+
     }
 
-}
+    AVMutableVideoComposition *videoComposition =
+        [AVMutableVideoComposition videoComposition];
 
-AVMutableVideoComposition *videoComposition =
-    [AVMutableVideoComposition videoComposition];
-
-videoComposition.instructions = compositionInstructions;
-videoComposition.renderSize = CGSizeMake(1280.0f, 720.0f);
-videoComposition.frameDuration = CMTimeMake(1, 30);
-videoComposition.renderScale = 1.0f;
+    videoComposition.instructions = compositionInstructions;
+    videoComposition.renderSize = CGSizeMake(1280.0f, 720.0f);
+    videoComposition.frameDuration = CMTimeMake(1, 30);
+    videoComposition.renderScale = 1.0f;
 
     return videoComposition;
 }
